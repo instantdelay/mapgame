@@ -26,20 +26,37 @@ body {
 #regions {
    display: flex;
    padding: 5px;
+   font-family: Verdana, Geneva, Tahoma, sans-serif;
+   font-size: 12px;
 }
 
 .region {
    min-width: 100px;
    border: 1px solid #777;
-   border-radius: 5px;
+   border-radius: 8px;
    text-align: center;
    cursor: pointer;
-   background-color: #eee;
+   background-color: #777;
+   color: #eee;
    margin: 5px;
+   padding: 2px;
+}
+
+.region:hover {
+    text-shadow: white 0 0 7px, #79b4cc 0 0 3px;
+}
+
+.region.selected {
+    color: #000;
+    background-color: #eee;
+}
+.region.completed {
+    color: #1cea1c;
 }
 
 #input input {
-   font-size: 1.6em;
+   font-size: 1.4em;
+   padding: 4px 8px;
 }
 
 .label {

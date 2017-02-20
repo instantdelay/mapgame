@@ -1,6 +1,7 @@
 var map = L.map('map');
 
-var snd = new Audio("lip_sound.mp3");
+var namedSound = new Audio("lip_sound.mp3");
+var regionSound = new Audio("glockenspiel_selection.mp3");
 
 var byName = {};
 var centers = {};
@@ -15,9 +16,10 @@ var colors = [
 ];
 
 var ALL = {
-   name: "World"
+   name: "World",
+   bounds: [[-56, -218], [66, 179]]
 };
-var activeRegion = ALL;
+var selectedRegion = ALL;
 var regions = [
    {
       name: "North America",
@@ -50,33 +52,48 @@ var regionsByName = {};
 var regionsDiv = $("#regions");
 regions.forEach(function (r) {
    regionsByName[r.name] = r;
-   r.total = 0;
-   r.found = 0;
+   r.total = r.found = 0;
+   r.nations = [];
    var rd = $('<div class="region"><div class="title">' + r.name + '</div><div>0 / 0</div></div>');
    regionsDiv.append(rd);
    rd.on('click', function(e) {
-      activateRegion(r);
+      selectRegion(r);
    });
    r.elem = rd;
 });
 
-function activateRegion(r) {
-   if (r === ALL) {
-      map.fitWorld();
-   }
-   else {
-      map.fitBounds(r.bounds);
+function selectRegion(r) {
+   map.fitBounds(r.bounds);
+
+   if (selectedRegion && selectedRegion !== r) {
+      selectedRegion.elem.removeClass("selected");
+      deactivateRegion(selectedRegion);
    }
 
-   if (activeRegion) {
-      activeRegion.elem.css('background-color', '');
-   }
-   activeRegion = r;
-   activeRegion.elem.css('background-color', '#999');
+   selectedRegion = r;
+   r.elem.addClass("selected");
+   activateRegion(r);
+
+   $("#nameBox").focus();
+}
+
+function activateRegion(r) {
+   r.nations.forEach(function(l) {
+      l.setStyle({'fillOpacity': 1});
+   });
+}
+
+function deactivateRegion(r) {
+   r.nations.forEach(function(l) {
+      l.setStyle({'fillOpacity': 0.4});
+   });
 }
 
 function updateRegionElem(r) {
-      $(r.elem.children()[1]).text(r.found + " / " + r.total);
+   if (r.found == r.total) {
+      r.elem.addClass('completed');
+   }
+   $(r.elem.children()[1]).text(r.found + " / " + r.total);
 }
 
 $.getJSON("country_labels.geojson", function(data) {
@@ -102,10 +119,15 @@ function showLabel(f) {
 
 var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
    onEachFeature: function(feature, layer) {
+      if (feature.properties.type == 'Indeterminate') {
+         return;
+      }
+
       byName[feature.properties.name.toLowerCase()] = layer;
       byName[feature.properties.name_long.toLowerCase()] = layer;
       
       ALL.total++;
+      ALL.nations.push(layer);
 
       let region = regionsByName[feature.properties.continent];
       if (!region) {
@@ -114,6 +136,7 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
 
       if (region) {
          region.total++;
+         region.nations.push(layer);
       }
       else {
          console.log("Missing region " + feature.properties.continent);
@@ -127,15 +150,28 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
          color: '#fff',
          fillColor: '#ddd',
          opacity: 0.8,
-         fillOpacity: 0.8,
+         fillOpacity: 0.4,
          weight: 1
       };
    }
 });       
 layer.on('data:loaded', function(e) {
    regions.forEach(updateRegionElem);
+   activateRegion(selectedRegion);
 });
 layer.addTo(map);
+
+function completeRegion() {
+   regionSound.play();
+   setTimeout(function() {
+      for (let i = 0; i < regions.length; i++) {
+         if (regions[i].found < regions[i].total) {
+            selectRegion(regions[i]);
+            break;
+         }
+      }
+   }, 1000);
+}
 
 function checkName(name) {
    var l = byName[name.toLowerCase()];
@@ -146,7 +182,7 @@ function checkName(name) {
 
    var region = regionsByName[l.feature.properties.continent];
 
-   if (activeRegion !== ALL && region !== activeRegion) {
+   if (selectedRegion !== ALL && region !== selectedRegion) {
       // Not in the current region
       // TODO Maybe flash or something?
       return false;
@@ -164,7 +200,13 @@ function checkName(name) {
    updateRegionElem(ALL);
 
    showLabel(l.feature);
-   snd.play();
+
+   if (region.found == region.total) {
+      completeRegion();
+   }
+   else {
+      namedSound.play();
+   }
    return true;
 }
 
@@ -176,6 +218,6 @@ $("#nameBox").on('input', function(e) {
 });
 
 $(function() {
-   activateRegion(regions[0]);
+   selectRegion(regions[0]);
    $("#nameBox").focus();
 });
