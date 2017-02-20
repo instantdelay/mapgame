@@ -241,7 +241,19 @@ $("#nameBox").on('input', function(e) {
    }
 });
 
+function showHint(e) {
+   for (let i = 0; i < selectedRegion.nations.length; i++) {
+      let n = selectedRegion.nations[i];
+      if (!n.found) {
+         alert("It starts with " + n.feature.properties.name_long[0]);
+         break;
+      }
+   }
+   return false;
+}
+
 $(function() {
    selectRegion(regions[0]);
    $("#nameBox").focus();
+   $("#hint a").on('click', showHint);
 });
