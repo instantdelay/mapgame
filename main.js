@@ -113,8 +113,26 @@ function showLabel(f) {
       html: '<span>' + f.properties.name_long + '</span>'
    });
    var coords = centers[f.properties.sovereignt];
+   if (f.properties.continent == "Oceania" && coords[1] < 0) {
+      // see: fixOceania
+      coords[1] += 360;
+   }
    L.marker(coords, {icon:ic}).addTo(map);
    f.labeled = true;
+}
+
+function fixOceania(f) {
+   // Some of the places in Oceania are east enough that they wrap to negative longitude
+   // Add 360 so they show up near the others...
+   // TODO Edit this in the source data??
+   var polys = f.geometry.type == 'MultiPolygon' ? f.geometry.coordinates : [f.geometry.coordinates];
+   polys.forEach(function(poly) {
+      if (poly[0][0][0] < 0) {
+         poly[0].forEach(function(coord) {
+            coord[0] += 360;
+         });
+      }
+   });
 }
 
 var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
@@ -145,6 +163,12 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
          showLabel(feature);
       });
    },
+   filter: function(f) {
+      if (f.properties.continent == 'Oceania') {
+         fixOceania(f);
+      }
+      return true;
+   },
    style: function(f) {
       return {
          color: '#fff',
@@ -154,7 +178,7 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
          weight: 1
       };
    }
-});       
+});
 layer.on('data:loaded', function(e) {
    regions.forEach(updateRegionElem);
    activateRegion(selectedRegion);
