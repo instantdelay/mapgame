@@ -35,7 +35,7 @@ var regions = [
    },
    {
       name: "Asia",
-      bounds: [[0, 32], [68, 148]]
+      bounds: [[-12, 32], [55, 148]]
    },
    {
       name: "Africa",
@@ -43,7 +43,7 @@ var regions = [
    },
    {
       name: "Oceania",
-      bounds: [[-50, 106], [0, 179]]
+      bounds: [[-50, 106], [7, 179]]
    },
    ALL
 ];
