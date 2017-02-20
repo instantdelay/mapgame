@@ -1,0 +1,52 @@
+html {
+   height: 100%;
+}
+
+body {
+   margin: 0;
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+}
+
+#map {
+   flex: 1;
+}
+
+.leaflet-container {
+    background: #87ceeb;
+}
+
+.bar {
+   display: flex;
+   align-items: center;
+   background-color: #444;
+}
+
+#regions {
+   display: flex;
+   padding: 5px;
+}
+
+.region {
+   min-width: 100px;
+   border: 1px solid #777;
+   border-radius: 5px;
+   text-align: center;
+   cursor: pointer;
+   background-color: #eee;
+   margin: 5px;
+}
+
+#input input {
+   font-size: 1.6em;
+}
+
+.label {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   line-height: 12px;
+   text-align: center;
+   text-shadow: white 1px 1px 2px; /* ugly? */
+}
