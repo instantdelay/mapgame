@@ -186,14 +186,18 @@ layer.addTo(map);
 
 function completeRegion() {
    regionSound.play();
-   setTimeout(function() {
-      for (let i = 0; i < regions.length; i++) {
-         if (!regions[i].isComplete()) {
-            selectRegion(regions[i]);
-            break;
+   if (selectedRegion !== ALL) {
+      // Select the next region that has missing countries
+      // (but only if we aren't looking at the whole world)
+      setTimeout(function() {
+         for (let i = 0; i < regions.length; i++) {
+            if (!regions[i].isComplete()) {
+               selectRegion(regions[i]);
+               break;
+            }
          }
-      }
-   }, 1000);
+      }, 1000);
+   }
 }
 
 var lastTimeout = null;
