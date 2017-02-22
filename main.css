@@ -7,6 +7,7 @@ body {
    height: 100%;
    display: flex;
    flex-direction: column;
+   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 #map {
@@ -32,7 +33,6 @@ body {
 #regions {
    display: flex;
    padding: 5px;
-   font-family: Verdana, Geneva, Tahoma, sans-serif;
    font-size: 12px;
 }
 
@@ -60,9 +60,20 @@ body {
     color: #1cea1c;
 }
 
-#input input {
+#nameBox {
    font-size: 1.4em;
    padding: 4px 8px;
+   transition: background-color 0.3s;
+}
+
+#nameBox.correct {
+    background-color: limegreen;
+    transition: background-color 0s;
+}
+
+#nameBox.wrong {
+    background-color: orangered;
+    transition: background-color 0s;
 }
 
 #hint {
@@ -84,4 +95,15 @@ a:hover {
    line-height: 12px;
    text-align: center;
    text-shadow: white 1px 1px 2px; /* ugly? */
+}
+
+#alert {
+    position: absolute;
+    z-index: 1000;
+    padding: 8px;
+    width: 220px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    box-shadow: gray 1px 1px 2px;
+    font-size: 12px;
 }

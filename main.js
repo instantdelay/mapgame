@@ -2,8 +2,10 @@ var map = L.map('map');
 
 var namedSound = new Audio("lip_sound.mp3");
 var regionSound = new Audio("glockenspiel_selection.mp3");
+var wrongSound = new Audio("dustyroom_multimedia_removal_select_tone.mp3");
 
 var byName = {};
+var allByName = {};
 var centers = {};
 var colors = [
    '#ffffcc',
@@ -89,6 +91,7 @@ $.getJSON("country_labels.geojson", function(data) {
       if (f.properties.sovereignt == f.properties.admin) {
          centers[f.properties.sovereignt] = f.geometry.coordinates.reverse();
       }
+      allByName[f.properties.name.toLowerCase()] = f;
    });
 });
 
@@ -193,24 +196,58 @@ function completeRegion() {
    }, 1000);
 }
 
+var lastTimeout = null;
+function showAlert(text) {
+   let = elem = $("#alert");
+   elem.text(text).show();
+   if (lastTimeout != null) {
+      clearTimeout(lastTimeout);
+   }
+   lastTimeout = setTimeout(function() {
+      elem.fadeOut();
+      lastTimeout = null;
+   }, 5000);
+   wrongSound.play();
+}
+
+const MatchResult = Object.freeze({
+   MATCH: {},
+   OTHER: {},
+   NONE: {}
+});
+
 function checkName(name) {
-   var l = byName[name.toLowerCase()];
-   if (!l || l.found) {
-      // Not a match or already found
-      return false;
+   var cleanName = name.trim().toLowerCase();
+   var l = byName[cleanName];
+   if (!l) {
+      // Not a match
+      // It might be the name of a constituent country or territory however
+      let ct = allByName[cleanName];
+      if (ct) {
+         let owner = byName[ct.properties.sovereignt.toLowerCase()];
+         let ownerName = owner.found ? owner.feature.properties.name_long :
+               "another sovereign state";
+         showAlert("Sorry, " + ct.properties.name + " is part of " +
+               ownerName + ".");
+         return MatchResult.OTHER;
+      }
+      return MatchResult.NONE;
+   }
+
+   if (l.found) {
+      return MatchResult.NONE;
    }
 
    var region = regionsByName[l.feature.properties.continent];
 
    if (selectedRegion !== ALL && region !== selectedRegion) {
       // Not in the current region
-      // TODO Maybe flash or something?
-      return false;
+      showAlert("Oops, that's not in " + selectedRegion.name + ".");
+      return MatchResult.WRONG_REGION;
    }
 
    l.setStyle({
       fillColor: colors[l.feature.properties.mapcolor7 - 1]
-      // fillColor: '#32cd32'
    });
    l.found = true;
    ALL.found++;
@@ -230,15 +267,32 @@ function checkName(name) {
    else {
       namedSound.play();
    }
-   return true;
+   return MatchResult.MATCH;
 }
 
-$("#nameBox").on('input', function(e) {
-   var box = $(this);
-   if (checkName(box.val())) {
+var box = $("#nameBox");
+box.on('input', function(e) {
+   let result = checkName(box.val());
+   if (result != MatchResult.NONE) {
       box.val('');
+      let cls = (result == MatchResult.MATCH ? 'correct' : 'wrong');
+      flashBox(cls);
    }
 });
+box.on('keypress', function(e) {
+   $("#alert").hide();
+   if (e.which == 13 && box.val().trim() != "") {
+      flashBox('wrong');
+   }
+   return true;
+});
+
+function flashBox(cls) {
+   box.addClass(cls);
+   setTimeout(function(){
+      box.removeClass(cls);
+   }, 100);
+}
 
 function showHint(e) {
    for (let i = 0; i < selectedRegion.nations.length; i++) {
@@ -255,4 +309,8 @@ $(function() {
    selectRegion(regions[0]);
    $("#nameBox").focus();
    $("#hint a").on('click', showHint);
+   $("#alert").css({
+      top: (box.offset().top + box.height() + 24) + 'px',
+      left: box.offset().left + 'px'
+   });
 });
