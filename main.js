@@ -15,36 +15,26 @@ var colors = [
    '#e31a1c'
 ];
 
-var ALL = {
-   name: "World",
-   bounds: [[-56, -218], [66, 179]]
+function Region(name, bounds) {
+   this.name = name;
+   this.bounds = bounds;
+   this.found = 0;
+   this.nations = [];
+   this.sub = {};
+}
+Region.prototype.isComplete = function() {
+   return this.found >= this.nations.length;
 };
+
+var ALL = new Region("World", [[-56, -218], [66, 179]]);
 var selectedRegion = ALL;
 var regions = [
-   {
-      name: "North America",
-      bounds: [[6, -135], [55, -60]]
-   },
-   {
-      name: "South America",
-      bounds: [[-45, -84], [13, -34]]
-   },
-   {
-      name: "Europe",
-      bounds: [[33, -18], [66, 44]]
-   },
-   {
-      name: "Asia",
-      bounds: [[-12, 32], [55, 148]]
-   },
-   {
-      name: "Africa",
-      bounds: [[-35, -20], [38, 53]]
-   },
-   {
-      name: "Oceania",
-      bounds: [[-50, 106], [7, 179]]
-   },
+   new Region("North America", [[6, -135], [55, -60]]),
+   new Region("South America", [[-45, -84], [13, -34]]),
+   new Region("Europe", [[33, -18], [66, 44]]),
+   new Region("Asia", [[-12, 32], [55, 148]]),
+   new Region("Africa", [[-35, -20], [38, 53]]),
+   new Region("Oceania", [[-50, 106], [7, 179]]),
    ALL
 ];
 var regionsByName = {};
@@ -52,8 +42,6 @@ var regionsByName = {};
 var regionsDiv = $("#regions");
 regions.forEach(function (r) {
    regionsByName[r.name] = r;
-   r.total = r.found = 0;
-   r.nations = [];
    var rd = $('<div class="region"><div class="title">' + r.name + '</div><div>0 / 0</div></div>');
    regionsDiv.append(rd);
    rd.on('click', function(e) {
@@ -90,10 +78,10 @@ function deactivateRegion(r) {
 }
 
 function updateRegionElem(r) {
-   if (r.found == r.total) {
+   if (r.isComplete()) {
       r.elem.addClass('completed');
    }
-   $(r.elem.children()[1]).text(r.found + " / " + r.total);
+   $(r.elem.children()[1]).text(r.found + " / " + r.nations.length);
 }
 
 $.getJSON("country_labels.geojson", function(data) {
@@ -141,11 +129,9 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
          return;
       }
 
+      byName[feature.properties.sovereignt.toLowerCase()] = layer;
       byName[feature.properties.name.toLowerCase()] = layer;
       byName[feature.properties.name_long.toLowerCase()] = layer;
-      
-      ALL.total++;
-      ALL.nations.push(layer);
 
       let region = regionsByName[feature.properties.continent];
       if (!region) {
@@ -153,8 +139,18 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
       }
 
       if (region) {
-         region.total++;
          region.nations.push(layer);
+         ALL.nations.push(layer);
+
+         var sub = region.sub[feature.properties.subregion];
+         if (sub == null) {
+            region.sub[feature.properties.subregion] = sub = {
+               name: feature.properties.subregion,
+               found: 0,
+               nations: []
+            };
+         }
+         sub.nations.push(layer);
       }
       else {
          console.log("Missing region " + feature.properties.continent);
@@ -189,7 +185,7 @@ function completeRegion() {
    regionSound.play();
    setTimeout(function() {
       for (let i = 0; i < regions.length; i++) {
-         if (regions[i].found < regions[i].total) {
+         if (!regions[i].isComplete()) {
             selectRegion(regions[i]);
             break;
          }
@@ -223,9 +219,12 @@ function checkName(name) {
    updateRegionElem(region);
    updateRegionElem(ALL);
 
+   var sub = region.sub[l.feature.properties.subregion];
+   sub.found++;
+
    showLabel(l.feature);
 
-   if (region.found == region.total) {
+   if (region.isComplete()) {
       completeRegion();
    }
    else {
