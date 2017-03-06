@@ -1,4 +1,6 @@
-var map = L.map('map');
+var map = L.map('map', {
+   preferCanvas: true
+});
 
 var namedSound = new Audio("lip_sound.mp3");
 var regionSound = new Audio("glockenspiel_selection.mp3");
@@ -126,7 +128,7 @@ function fixOceania(f) {
    });
 }
 
-var layer = new L.GeoJSON.AJAX("sovereign_50m.geojson", {
+var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
    onEachFeature: function(feature, layer) {
       if (feature.properties.type == 'Indeterminate') {
          return;
