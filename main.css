@@ -7,8 +7,11 @@ body {
    height: 100%;
    display: flex;
    flex-direction: column;
-   font-family: Verdana, Geneva, Tahoma, sans-serif;
    font-size: 16px;
+}
+
+body, .leaflet-container {
+   font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
 
 #map {
@@ -28,43 +31,79 @@ body {
    padding: 0 6px;
 }
 
-#regions {
-   padding: 5px;
-   font-size: 0.8em;
+#regionMenu {
+   height: 35px;
    flex: 1;
+   padding: 5px;
+   min-width: 100px;
+}
+
+#regions {
+   display: flex;
+   margin: 0;
+   padding: 0;
+   height: 100%;
+   align-items: center;
+   overflow: hidden;
 }
 
 .region {
-   float: left;
-   min-width: 100px;
-   border: 1px solid #777;
+   min-width: 85px;
+   font-size: 0.7em;
+   border-width: 2px;
+   border-style: solid;
+   border-color: #777;
    border-radius: 8px;
    text-align: center;
    cursor: pointer;
    background-color: #777;
-   color: #eee;
-   margin: 5px;
+   margin: 0 5px;
    padding: 2px;
+   color: #d0d0d0;
+   line-height: 1.1;
+   list-style-type: none;
+}
+
+.region .title, .info .title {
+    font-weight: bold;
+    color: #f0f0f0;
 }
 
 .region:hover {
-    text-shadow: white 0 0 7px, #79b4cc 0 0 3px;
+    border-color: #eee;
 }
 
 .region.selected {
     color: #000;
-    background-color: #eee;
+    background-color: #ddd;
+    border-color: #ddd;
+}
+.region.selected .title {
+    color: #000;
 }
 .region.completed {
     color: #1cea1c;
+}
+
+#input {
+    flex-shrink: 10;
 }
 
 #nameBox {
    font-size: 1.4em;
    width: 100%;
    box-sizing: border-box;
-   padding: 4px 8px;
+   padding: 0 4px 0 7px;
    transition: background-color 0.3s;
+   background-color: rgba(255, 255, 255, 0.3);
+   border: 0;
+   color: #fff;
+   line-height: 34px;
+   border-radius: 5px;
+}
+#nameBox:focus {
+    border: 0;
+    outline: none;
 }
 
 #nameBox.correct {
@@ -107,4 +146,57 @@ a:hover {
     border-radius: 4px;
     box-shadow: gray 1px 1px 2px;
     font-size: 0.8em;
+}
+
+#small {
+   color: white;
+   height: 35px;
+   min-width: 60px;
+   display: flex;
+   align-items: center;
+   font-size: 0.7em;
+}
+
+#small .info {
+   text-align: center;
+}
+
+#small span, .menuBtn {
+   vertical-align: middle;
+}
+
+.menuBtn .bar {
+   width: 12px;
+   height: 2px;
+   background-color: #ddd;
+   border-radius: 1px;
+}
+
+.menuBtn .bar+.bar {
+   margin-top: 4px;
+}
+
+.menuBtn {
+   display: inline-block;
+   padding: 5px;
+   border-radius: 2px;
+   cursor: pointer;
+}
+
+.menuBtn:hover {
+   background-color: rgba(255, 255, 255, 0.2);
+}
+
+#menu {
+   position: absolute;
+   top: 45px;
+   right: 0;
+   z-index: 9000;
+   background-color: #444;
+   min-width: 150px;
+   padding: 5px;
+}
+
+#menu .region {
+   margin-top: 4px;
 }

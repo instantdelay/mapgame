@@ -29,6 +29,9 @@ function Region(name, bounds) {
 Region.prototype.isComplete = function() {
    return this.found >= this.nations.length;
 };
+Region.prototype.getRatioText = function() {
+   return this.found + " / " + this.nations.length;
+}
 
 var ALL = new Region("World", [[-56, -218], [66, 179]]);
 var selectedRegion = ALL;
@@ -46,10 +49,11 @@ var regionsByName = {};
 var regionsDiv = $("#regions");
 regions.forEach(function (r) {
    regionsByName[r.name] = r;
-   var rd = $('<div class="region"><div class="title">' + r.name + '</div><div>0 / 0</div></div>');
+   var rd = $('<li class="region"><div class="title">' + r.name + '</div><div class="num">0 / 0</div></li>');
    regionsDiv.append(rd);
    rd.on('click', function(e) {
       selectRegion(r);
+      $("#menu").hide();
    });
    r.elem = rd;
 });
@@ -64,6 +68,9 @@ function selectRegion(r) {
 
    selectedRegion = r;
    r.elem.addClass("selected");
+   $(".info .title").text(r.name);
+   $(".info .num").text(r.getRatioText());
+
    activateRegion(r);
 
    $("#nameBox").focus();
@@ -85,7 +92,10 @@ function updateRegionElem(r) {
    if (r.isComplete()) {
       r.elem.addClass('completed');
    }
-   $(r.elem.children()[1]).text(r.found + " / " + r.nations.length);
+   $(".num", r.elem).text(r.getRatioText());
+   if (selectedRegion === r) {
+      $(".info .num").text(r.getRatioText());
+   }
 }
 
 $.getJSON("country_labels.geojson", function(data) {
@@ -203,7 +213,7 @@ function completeRegion() {
 }
 
 var lastTimeout = null;
-function showAlert(text) {
+function showAlert(text, type) {
    let = elem = $("#alert");
    elem.text(text).show();
    if (lastTimeout != null) {
@@ -213,7 +223,9 @@ function showAlert(text) {
       elem.fadeOut();
       lastTimeout = null;
    }, 5000);
-   wrongSound.play();
+   if (type == 'wrong') {
+      wrongSound.play();
+   }
 }
 
 const MatchResult = Object.freeze({
@@ -234,7 +246,7 @@ function checkName(name) {
          let ownerName = owner.found ? owner.feature.properties.name_long :
                "another sovereign state";
          showAlert("Sorry, " + ct.properties.name + " is part of " +
-               ownerName + ".");
+               ownerName + ".", 'wrong');
          return MatchResult.OTHER;
       }
       return MatchResult.NONE;
@@ -248,7 +260,7 @@ function checkName(name) {
 
    if (selectedRegion !== ALL && region !== selectedRegion) {
       // Not in the current region
-      showAlert("Oops, that's not in " + selectedRegion.name + ".");
+      showAlert("Oops, that's not in " + selectedRegion.name + ".", 'wrong');
       return MatchResult.WRONG_REGION;
    }
 
@@ -300,23 +312,61 @@ function flashBox(cls) {
    }, 100);
 }
 
-function showHint(e) {
+function showHint() {
    for (let i = 0; i < selectedRegion.nations.length; i++) {
       let n = selectedRegion.nations[i];
       if (!n.found) {
-         alert("It starts with " + n.feature.properties.name_long[0]);
+         showAlert("You're missing one that starts with " + n.feature.properties.name_long[0]);
+         $("#nameBox").focus();
          break;
       }
    }
-   return false;
+}
+
+var regionsCollapsed = false;
+var showSize = -1;
+
+function updateSize() {
+   let r = $("#regions")[0];
+   if (r.scrollHeight > r.clientHeight || r.offsetWidth < r.scrollWidth) {
+      // Window is too small to show all the region buttons
+      if (!regionsCollapsed) {
+         var diff = r.scrollWidth - r.offsetWidth;
+         $(r).hide();
+         // Move them to the menu
+         $(".region").appendTo("#menu");
+         $("#small").show();
+         regionsCollapsed = true;
+         // Calculate width required to fit everything
+         showSize = window.innerWidth + diff;
+      }
+   }
+   else if (window.innerWidth > showSize && regionsCollapsed) {
+      // Move the region buttons back to the bar
+      $(".region").appendTo("#regions");
+      $(r).show();
+      $("#small").hide();
+      regionsCollapsed = false;
+   }
 }
 
 $(function() {
    selectRegion(regions[0]);
    $("#nameBox").focus();
-   $("#hint a").on('click', showHint);
+   $("#hintlink").on('click', function(e) {
+      $("#menu").hide();
+      showHint();
+      return false;
+   });
    $("#alert").css({
-      top: (box.offset().top + box.height() + 24) + 'px',
+      top: (box.offset().top + box.height() + 18) + 'px',
       left: box.offset().left + 'px'
    });
+   updateSize();
+
+   $(".menuBtn").on('click', function() {
+      $("#menu").toggle();
+   });
 });
+
+$(window).resize(updateSize);
