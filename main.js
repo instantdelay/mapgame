@@ -1,15 +1,15 @@
-var map = L.map('map', {
+const map = L.map('map', {
    preferCanvas: true
 });
 
-var namedSound = new Audio("lip_sound.mp3");
-var regionSound = new Audio("glockenspiel_selection.mp3");
-var wrongSound = new Audio("dustyroom_multimedia_removal_select_tone.mp3");
+const namedSound = new Audio("lip_sound.mp3");
+const regionSound = new Audio("glockenspiel_selection.mp3");
+const wrongSound = new Audio("dustyroom_multimedia_removal_select_tone.mp3");
 
-var byName = {};
-var allByName = {};
-var centers = {};
-var colors = [
+const byName = {};
+const allByName = {};
+const centers = {};
+const colors = [
    '#ffffcc',
    '#ffeda0',
    '#fed976',
@@ -19,23 +19,47 @@ var colors = [
    '#e31a1c'
 ];
 
-function Region(name, bounds) {
-   this.name = name;
-   this.bounds = bounds;
-   this.found = 0;
-   this.nations = [];
-   this.sub = {};
-}
-Region.prototype.isComplete = function() {
-   return this.found >= this.nations.length;
-};
-Region.prototype.getRatioText = function() {
-   return this.found + " / " + this.nations.length;
-}
+class Region {
+   constructor(name, bounds) {
+      this.name = name;
+      this.bounds = bounds;
+      this.found = 0;
+      this.nations = [];
+      this.sub = {};
+      Region.byName[name] = this;
+   }
 
-var ALL = new Region("World", [[-56, -218], [66, 179]]);
-var selectedRegion = ALL;
-var regions = [
+   isComplete() {
+      return this.found >= this.nations.length;
+   };
+   getRatioText() {
+      return this.found + " / " + this.nations.length;
+   }
+   activate() {
+      console.log('what');
+      this.nations.forEach(function(l) {
+         l.setStyle({'fillOpacity': 1});
+      });
+   }
+   deactivate() {
+      this.nations.forEach(function(l) {
+         l.setStyle({'fillOpacity': 0.4});
+      });
+   }
+   updateView() {
+      if (this.isComplete()) {
+         this.elem.addClass('completed');
+      }
+      $(".num", this.elem).text(this.getRatioText());
+      if (selectedRegion === this) {
+         $(".info .num").text(this.getRatioText());
+      }
+   }
+}
+Region.byName = {};
+
+const ALL = new Region("World", [[-56, -218], [66, 179]]);
+const regions = [
    new Region("North America", [[6, -135], [55, -60]]),
    new Region("South America", [[-45, -84], [13, -34]]),
    new Region("Europe", [[33, -18], [66, 44]]),
@@ -44,12 +68,11 @@ var regions = [
    new Region("Oceania", [[-50, 106], [7, 179]]),
    ALL
 ];
-var regionsByName = {};
+var selectedRegion = ALL;
 
 var regionsDiv = $("#regions");
 regions.forEach(function (r) {
-   regionsByName[r.name] = r;
-   var rd = $('<li class="region"><div class="title">' + r.name + '</div><div class="num">0 / 0</div></li>');
+   var rd = $(`<li class="region"><div class="title">${r.name}</div><div class="num">0 / 0</div></li>`);
    regionsDiv.append(rd);
    rd.on('click', function(e) {
       selectRegion(r);
@@ -63,7 +86,7 @@ function selectRegion(r) {
 
    if (selectedRegion && selectedRegion !== r) {
       selectedRegion.elem.removeClass("selected");
-      deactivateRegion(selectedRegion);
+      selectedRegion.deactivate();
    }
 
    selectedRegion = r;
@@ -71,31 +94,9 @@ function selectRegion(r) {
    $(".info .title").text(r.name);
    $(".info .num").text(r.getRatioText());
 
-   activateRegion(r);
+   r.activate();
 
    $("#nameBox").focus();
-}
-
-function activateRegion(r) {
-   r.nations.forEach(function(l) {
-      l.setStyle({'fillOpacity': 1});
-   });
-}
-
-function deactivateRegion(r) {
-   r.nations.forEach(function(l) {
-      l.setStyle({'fillOpacity': 0.4});
-   });
-}
-
-function updateRegionElem(r) {
-   if (r.isComplete()) {
-      r.elem.addClass('completed');
-   }
-   $(".num", r.elem).text(r.getRatioText());
-   if (selectedRegion === r) {
-      $(".info .num").text(r.getRatioText());
-   }
 }
 
 $.getJSON("country_labels.geojson", function(data) {
@@ -148,9 +149,9 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
       byName[feature.properties.name.toLowerCase()] = layer;
       byName[feature.properties.name_long.toLowerCase()] = layer;
 
-      let region = regionsByName[feature.properties.continent];
+      let region = Region.byName[feature.properties.continent];
       if (!region) {
-         region = regionsByName[feature.properties.continent = feature.properties.region_un];
+         region = Region.byName[feature.properties.continent = feature.properties.region_un];
       }
 
       if (region) {
@@ -191,8 +192,8 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
    }
 });
 layer.on('data:loaded', function(e) {
-   regions.forEach(updateRegionElem);
-   activateRegion(selectedRegion);
+   regions.forEach(r => r.updateView());
+   selectedRegion.activate();
 });
 layer.addTo(map);
 
@@ -214,7 +215,7 @@ function completeRegion() {
 
 var lastTimeout = null;
 function showAlert(text, type) {
-   let = elem = $("#alert");
+   let elem = $("#alert");
    elem.text(text).show();
    if (lastTimeout != null) {
       clearTimeout(lastTimeout);
@@ -256,7 +257,7 @@ function checkName(name) {
       return MatchResult.NONE;
    }
 
-   var region = regionsByName[l.feature.properties.continent];
+   var region = Region.byName[l.feature.properties.continent];
 
    if (selectedRegion !== ALL && region !== selectedRegion) {
       // Not in the current region
@@ -271,8 +272,8 @@ function checkName(name) {
    ALL.found++;
 
    region.found++;
-   updateRegionElem(region);
-   updateRegionElem(ALL);
+   region.updateView();
+   ALL.updateView();
 
    var sub = region.sub[l.feature.properties.subregion];
    sub.found++;
