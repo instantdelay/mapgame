@@ -2,6 +2,8 @@ const map = L.map('map', {
    preferCanvas: true
 });
 
+const MAP_DATA_FILE = "sovereign_50m_simple.geojson";
+const LABEL_DATA_FILE = "country_labels.geojson";
 const namedSound = new Audio("lip_sound.mp3");
 const regionSound = new Audio("glockenspiel_selection.mp3");
 const wrongSound = new Audio("dustyroom_multimedia_removal_select_tone.mp3");
@@ -99,15 +101,6 @@ function selectRegion(r) {
    $("#nameBox").focus();
 }
 
-$.getJSON("country_labels.geojson", function(data) {
-   data.features.forEach(function(f) {
-      if (f.properties.sovereignt == f.properties.admin) {
-         centers[f.properties.sovereignt] = f.geometry.coordinates.reverse();
-      }
-      allByName[f.properties.name.toLowerCase()] = f;
-   });
-});
-
 function showLabel(f) {
    if (f.labeled) {
       return;
@@ -139,7 +132,7 @@ function fixOceania(f) {
    });
 }
 
-var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
+var layer = L.geoJSON(null, {
    onEachFeature: function(feature, layer) {
       if (feature.properties.type == 'Indeterminate') {
          return;
@@ -191,12 +184,22 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
       };
    }
 });
-layer.on('data:loaded', function(e) {
+
+$.when($.getJSON(MAP_DATA_FILE), $.getJSON(LABEL_DATA_FILE)).done(function(mapData, labelData) {
+   layer.addData(mapData[0]);
+   layer.addTo(map);
+
+   labelData[0].features.forEach(function(f) {
+      if (f.properties.sovereignt == f.properties.admin) {
+         centers[f.properties.sovereignt] = f.geometry.coordinates.reverse();
+      }
+      allByName[f.properties.name.toLowerCase()] = f;
+   });
+
    regions.forEach(r => r.updateView());
    selectedRegion.activate();
    spinner.stop();
 });
-layer.addTo(map);
 
 function completeRegion() {
    regionSound.play();
