@@ -1,0 +1,11 @@
+{
+  "name": "mapgame",
+  "version": "0.1.0",
+  "scripts": {
+    "watch": "babel -w -o public/main.out.js resources/main.js",
+    "build": "babel -o public/main.out.js resources/main.js"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1"
+  }
+}

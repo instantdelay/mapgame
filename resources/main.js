@@ -2,11 +2,11 @@ const map = L.map('map', {
    preferCanvas: true
 });
 
-const MAP_DATA_FILE = "sovereign_50m_simple.geojson";
-const LABEL_DATA_FILE = "country_labels.geojson";
-const namedSound = new Audio("lip_sound.mp3");
-const regionSound = new Audio("glockenspiel_selection.mp3");
-const wrongSound = new Audio("dustyroom_multimedia_removal_select_tone.mp3");
+const MAP_DATA_FILE = "data/sovereign_50m_simple.geojson";
+const LABEL_DATA_FILE = "data/country_labels.geojson";
+const namedSound = new Audio("sound/lip_sound.mp3");
+const regionSound = new Audio("sound/glockenspiel_selection.mp3");
+const wrongSound = new Audio("sound/dustyroom_multimedia_removal_select_tone.mp3");
 
 const byName = {};
 const allByName = {};
