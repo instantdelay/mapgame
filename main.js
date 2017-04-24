@@ -194,6 +194,7 @@ var layer = new L.GeoJSON.AJAX("sovereign_50m_simple.geojson", {
 layer.on('data:loaded', function(e) {
    regions.forEach(r => r.updateView());
    selectedRegion.activate();
+   spinner.stop();
 });
 layer.addTo(map);
 
