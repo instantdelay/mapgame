@@ -164,8 +164,18 @@ var layer = L.geoJSON(null, {
       else {
          console.log("Missing region " + feature.properties.continent);
       }
+
+      feature.hintCount = 0;
       layer.on('click', function(e2) {
-         showLabel(feature);
+         if (feature.hintCount < 3) feature.hintCount++;
+         showAlert("That one starts with " + feature.properties.name_long.substr(0, feature.hintCount) + "...");
+         $("#nameBox").focus();
+      });
+      layer.on('mouseover', function(e2) {
+         layer.setStyle({'weight': 3});
+      });
+      layer.on('mouseout', function(e2) {
+         layer.setStyle({'weight': null});
       });
    },
    filter: function(f) {
