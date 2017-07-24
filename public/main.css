@@ -116,6 +116,24 @@ body, .leaflet-container {
     transition: background-color 0s;
 }
 
+#nameBox::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color:    #ddd;
+}
+#nameBox:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color:    #ddd;
+   opacity:  1;
+}
+#nameBox::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color:    #ddd;
+   opacity:  1;
+}
+#nameBox:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:    #ddd;
+}
+#nameBox::-ms-input-placeholder { /* Microsoft Edge */
+   color:    #ddd;
+}
+
 #hint {
     padding: 3px;
 }
