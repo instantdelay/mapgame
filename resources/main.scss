@@ -62,27 +62,26 @@ body, .leaflet-container {
    color: #d0d0d0;
    line-height: 1.1;
    list-style-type: none;
+
+   &:hover {
+      border-color: #eee;
+   }
+   &.completed {
+      color: #1cea1c;
+   }
+   &.selected {
+      color: #000;
+      background-color: #ddd;
+      border-color: #ddd;
+   }
+   &.selected .title {
+      color: #000;
+   }
 }
 
 .region .title, .info .title {
     font-weight: bold;
     color: #f0f0f0;
-}
-
-.region:hover {
-    border-color: #eee;
-}
-
-.region.selected {
-    color: #000;
-    background-color: #ddd;
-    border-color: #ddd;
-}
-.region.selected .title {
-    color: #000;
-}
-.region.completed {
-    color: #1cea1c;
 }
 
 #input {
@@ -100,38 +99,38 @@ body, .leaflet-container {
    color: #fff;
    line-height: 34px;
    border-radius: 5px;
-}
-#nameBox:focus {
-    border: 0;
-    outline: none;
-}
 
-#nameBox.correct {
-    background-color: limegreen;
-    transition: background-color 0s;
-}
+   &:focus {
+      border: 0;
+      outline: none;
+   }
 
-#nameBox.wrong {
-    background-color: orangered;
-    transition: background-color 0s;
-}
+   &.correct {
+      background-color: limegreen;
+      transition: background-color 0s;
+   }
+   &.wrong {
+      background-color: orangered;
+      transition: background-color 0s;
+   }
 
-#nameBox::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-    color:    #ddd;
-}
-#nameBox:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-   color:    #ddd;
-   opacity:  1;
-}
-#nameBox::-moz-placeholder { /* Mozilla Firefox 19+ */
-   color:    #ddd;
-   opacity:  1;
-}
-#nameBox:-ms-input-placeholder { /* Internet Explorer 10-11 */
-   color:    #ddd;
-}
-#nameBox::-ms-input-placeholder { /* Microsoft Edge */
-   color:    #ddd;
+   &::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+      color:    #ddd;
+   }
+   &:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+      color:    #ddd;
+      opacity:  1;
+   }
+   &::-moz-placeholder { /* Mozilla Firefox 19+ */
+      color:    #ddd;
+      opacity:  1;
+   }
+   &:-ms-input-placeholder { /* Internet Explorer 10-11 */
+      color:    #ddd;
+   }
+   &::-ms-input-placeholder { /* Microsoft Edge */
+      color:    #ddd;
+   }
 }
 
 #hint {
@@ -139,11 +138,11 @@ body, .leaflet-container {
 }
 
 a {
-    color: #87ceeb;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
+   color: #87ceeb;
+   text-decoration: none;
+   &:hover {
+      text-decoration: underline;
+   }
 }
 
 .label {
@@ -173,25 +172,14 @@ a:hover {
    display: flex;
    align-items: center;
    font-size: 0.7em;
-}
 
-#small .info {
-   text-align: center;
+   .info {
+      text-align: center;
+   }
 }
 
 #small span, .menuBtn {
    vertical-align: middle;
-}
-
-.menuBtn .bar {
-   width: 12px;
-   height: 2px;
-   background-color: #ddd;
-   border-radius: 1px;
-}
-
-.menuBtn .bar+.bar {
-   margin-top: 4px;
 }
 
 .menuBtn {
@@ -199,10 +187,20 @@ a:hover {
    padding: 5px;
    border-radius: 2px;
    cursor: pointer;
-}
+   &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+   }
 
-.menuBtn:hover {
-   background-color: rgba(255, 255, 255, 0.2);
+   .bar {
+      width: 12px;
+      height: 2px;
+      background-color: #ddd;
+      border-radius: 1px;
+   }
+
+   .bar+.bar {
+      margin-top: 4px;
+   }
 }
 
 #menu {
@@ -213,8 +211,8 @@ a:hover {
    background-color: #444;
    min-width: 150px;
    padding: 5px;
-}
 
-#menu .region {
-   margin-top: 4px;
+   .region {
+      margin-top: 4px;
+   }
 }
