@@ -2,10 +2,18 @@
   "name": "mapgame",
   "version": "0.1.0",
   "scripts": {
-    "watch": "babel -w -o public/main.out.js resources/main.js",
-    "build": "babel -o public/main.out.js resources/main.js"
+    "build": "webpack --config webpack.config.js"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1"
+    "babel-cli": "^6.24.1",
+    "webpack-cli": "2.0.9",
+    "webpack": "4.0.1",
+    "node-sass": "4.7.2",
+    "css-loader": "0.28.10",
+    "sass-loader": "6.0.6",
+    "extract-text-webpack-plugin": "4.0.0-alpha.0",
+    "babel-core": "6.26.0",
+    "babel-loader": "7.1.3",
+    "babel-preset-env": "1.6.1"
   }
 }
