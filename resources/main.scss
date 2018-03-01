@@ -10,6 +10,12 @@ body {
    font-size: 16px;
 }
 
+h1 {
+   font-size: 1.6em;
+   color: #555;
+   margin: 1px 0 4px 0;
+ }
+
 body, .leaflet-container {
    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
@@ -19,16 +25,23 @@ body, .leaflet-container {
 }
 
 .leaflet-container {
-    background: #87ceeb;
+   background: #87ceeb;
 }
 
-.bar {
+.status {
    display: flex;
    align-items: center;
    background-color: #444;
+   border-radius: 8px 0 0 8px;
    justify-content: space-between;
    max-height: 45px;
    padding: 0 6px;
+   width: 250px;
+   // margin: 0 0 0 auto;
+   top: 25px;
+   right: 0;
+   position: absolute;
+   z-index: 9999;
 }
 
 #regionMenu {
@@ -84,24 +97,70 @@ body, .leaflet-container {
     color: #f0f0f0;
 }
 
-#input {
-    flex-shrink: 10;
+.info {
+   font-size: 1.3em;
+}
+.info .title {
+   float: left;
+}
+.info .num {
+   float: left;
+   margin-left: 8px;
+}
+
+.console {
+   // flex-shrink: 10;
+   position: absolute;
+   top: 25px;
+   left: 50%;
+   transform: translate(-50%, 0);
+   padding: 6px;
+   border-radius: 6px;
+   background-color: rgba(255, 255, 255, 0.8);
+   z-index: 9999;
+
+   &.collapsed {
+      h1 {
+         display: none;
+      }
+      p {
+         display: none;
+      }
+   }
+
+   p {
+      margin: 3px 0 8px 0;
+      font-size: 0.8em;
+      color: #444;
+   }
+
+   img {
+      position: absolute;
+      top: 50%;
+      right: 5px;
+      transform: translate(0, -50%);
+      opacity: 0.7;
+      height: 20px;
+      width: 20px;
+   }
 }
 
 #nameBox {
    font-size: 1.4em;
-   width: 100%;
+   // width: 100%;
    box-sizing: border-box;
    padding: 0 4px 0 7px;
    transition: background-color 0.3s;
-   background-color: rgba(255, 255, 255, 0.3);
+   background-color: rgba(255, 255, 255, 0.8);
    border: 0;
-   color: #fff;
+   color: #444;
    line-height: 34px;
    border-radius: 5px;
+   border: 1px solid #ddd;
 
    &:focus {
-      border: 0;
+      // border: 0;
+      border: 1px solid #ddd;
       outline: none;
    }
 
@@ -115,21 +174,21 @@ body, .leaflet-container {
    }
 
    &::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-      color:    #ddd;
+      color:    #888;
    }
    &:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-      color:    #ddd;
+      color:    #888;
       opacity:  1;
    }
    &::-moz-placeholder { /* Mozilla Firefox 19+ */
-      color:    #ddd;
+      color:    #888;
       opacity:  1;
    }
    &:-ms-input-placeholder { /* Internet Explorer 10-11 */
-      color:    #ddd;
+      color:    #888;
    }
    &::-ms-input-placeholder { /* Microsoft Edge */
-      color:    #ddd;
+      color:    #888;
    }
 }
 
@@ -192,10 +251,11 @@ a {
    }
 
    .bar {
-      width: 12px;
+      width: 17px;
       height: 2px;
       background-color: #ddd;
       border-radius: 1px;
+      display: block;
    }
 
    .bar+.bar {

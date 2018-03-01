@@ -5,6 +5,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
       <link rel="stylesheet" href="main.bundle.css" />
+      <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
    </head>
    <body>
       <script src="spin.min.js"></script>
@@ -15,9 +16,13 @@
             speed: 1.4,
          }).spin(document.body);
       </script>
-      <div class="bar">
-         <div id="input">
-            <input type="text" size="25" id="nameBox" placeholder="Name a country..." autocomplete="off" autocorrect="off" autocapitalize="off">
+      <div class="status">
+         <div id="hint">
+            <div class="menuBtn">
+               <span class="bar"></span>
+               <span class="bar"></span>
+               <span class="bar"></span>
+            </div>
          </div>
          <div id="regionMenu">
             <div id="small" style="display: none">
@@ -28,18 +33,19 @@
             </div>
             <ul id="regions"></ul>
          </div>
-         <div id="hint">
-            <div class="menuBtn">
-               <span class="bar"></span>
-               <span class="bar"></span>
-               <span class="bar"></span>
-            </div>
-         </div>
+         <a href="#" id="hintLink">
+            <i class="fas fa-question-circle"></i>
+         </a>
       </div>
       <div id="map"></div>
+      <div class="console">
+         <h1>MapGame</h1>
+         <p>Type the name of country in North America to begin:</p>
+         <input type="text" size="25" id="nameBox" placeholder="" autocomplete="off" autocorrect="off" autocapitalize="off">
+      </div>
       <div id="alert" style="display: none"></div>
       <div id="menu" style="display: none">
-         <a href="#" id="hintlink">Get a hint</a>
+         <!-- <a href="#" id="hintlink">Get a hint</a> -->
       </div>
       <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
       <script src="https://code.jquery.com/jquery-3.1.1.js"></script>

@@ -1,3 +1,5 @@
+import { FactTable } from './facts';
+
 const map = L.map('map', {
    preferCanvas: true
 });
@@ -8,7 +10,58 @@ const namedSound = new Audio("sound/lip_sound.mp3");
 const regionSound = new Audio("sound/glockenspiel_selection.mp3");
 const wrongSound = new Audio("sound/dustyroom_multimedia_removal_select_tone.mp3");
 
-const byName = {};
+class Country {
+   constructor(feature, layer) {
+      this.feature = feature;
+      this.layer = layer;
+      this.prefixLength = 0;
+   }
+   get aliases() {
+      return [
+         this.feature.properties.sovereignt,
+         this.feature.properties.name,
+         this.feature.properties.name_long
+      ]
+   }
+   get name() {
+      return this.feature.properties.name_long;
+   }
+   get found() {
+      return this.layer.found;
+   }
+   generateHint() {
+      // TODO Allow user to choose between name prefix and fact hints...?
+      let facts = FactTable[this.feature.properties.brk_name];
+      if (facts && Math.random() > 0.5) {
+         return facts[Math.floor(Math.random() * facts.length + 0.5)];
+      }
+      else {
+         this.prefixLength = Math.min(3, this.prefixLength + 1);
+         return "Its name starts with \"" + this.name.substr(0, this.prefixLength) + "\".";
+      }
+   }
+   activate() {
+      this.layer.setStyle({'fillOpacity': 1});
+   }
+   deactivate() {
+      this.layer.setStyle({'fillOpacity': 0.4});
+   }
+}
+
+class Index {
+   constructor() {
+      this.m = {};
+   }
+   add(obj) {
+      obj.aliases.forEach((alias) => this.m[alias.toLowerCase()] = obj);
+   }
+   find(name) {
+      return this.m[name.toLowerCase()];
+   }
+}
+
+// const byName = {};
+const countries = new Index();
 const allByName = {};
 const centers = {};
 const colors = [
@@ -38,15 +91,10 @@ class Region {
       return this.found + " / " + this.nations.length;
    }
    activate() {
-      console.log('what');
-      this.nations.forEach(function(l) {
-         l.setStyle({'fillOpacity': 1});
-      });
+      this.nations.forEach(n => n.activate());
    }
    deactivate() {
-      this.nations.forEach(function(l) {
-         l.setStyle({'fillOpacity': 0.4});
-      });
+      this.nations.forEach(n => n.deactivate());
    }
    updateView() {
       if (this.isComplete()) {
@@ -138,9 +186,8 @@ var layer = L.geoJSON(null, {
          return;
       }
 
-      byName[feature.properties.sovereignt.toLowerCase()] = layer;
-      byName[feature.properties.name.toLowerCase()] = layer;
-      byName[feature.properties.name_long.toLowerCase()] = layer;
+      let country = new Country(feature, layer);
+      countries.add(country);
 
       let region = Region.byName[feature.properties.continent];
       if (!region) {
@@ -148,8 +195,8 @@ var layer = L.geoJSON(null, {
       }
 
       if (region) {
-         region.nations.push(layer);
-         ALL.nations.push(layer);
+         region.nations.push(country);
+         ALL.nations.push(country);
 
          var sub = region.sub[feature.properties.subregion];
          if (sub == null) {
@@ -159,7 +206,7 @@ var layer = L.geoJSON(null, {
                nations: []
             };
          }
-         sub.nations.push(layer);
+         sub.nations.push(country);
       }
       else {
          console.log("Missing region " + feature.properties.continent);
@@ -167,8 +214,9 @@ var layer = L.geoJSON(null, {
 
       feature.hintCount = 0;
       layer.on('click', function(e2) {
-         if (feature.hintCount < 3) feature.hintCount++;
-         showAlert("That one starts with " + feature.properties.name_long.substr(0, feature.hintCount) + "...");
+         if (!country.found) {
+            showAlert(country.generateHint());
+         }
          $("#nameBox").focus();
       });
       layer.on('mouseover', function(e2) {
@@ -250,14 +298,13 @@ const MatchResult = Object.freeze({
 });
 
 function checkName(name) {
-   var cleanName = name.trim().toLowerCase();
-   var l = byName[cleanName];
-   if (!l) {
+   let country = countries.find(name);
+   if (!country) {
       // Not a match
       // It might be the name of a constituent country or territory however
-      let ct = allByName[cleanName];
+      let ct = allByName[name.toLowerCase()];
       if (ct) {
-         let owner = byName[ct.properties.sovereignt.toLowerCase()];
+         let owner = countries.find(ct.properties.sovereignt);
          let ownerName = owner.found ? owner.feature.properties.name_long :
                "another sovereign state";
          showAlert("Sorry, " + ct.properties.name + " is part of " +
@@ -267,6 +314,7 @@ function checkName(name) {
       return MatchResult.NONE;
    }
 
+   let l = country.layer;
    if (l.found) {
       return MatchResult.NONE;
    }
@@ -299,13 +347,21 @@ function checkName(name) {
    }
    else {
       namedSound.play();
+      let $console = $(".console");
+      if (!$console.hasClass("collapsed")) {
+         $console.css({height: $(".console").height() + 'px'})
+            .addClass("collapsed")
+            .animate({height: '40px'}, 200, function() {
+               $console.css({height: 'auto'});
+            });
+      }
    }
    return MatchResult.MATCH;
 }
 
 var box = $("#nameBox");
 box.on('input', function(e) {
-   let result = checkName(box.val());
+   let result = checkName(box.val().trim());
    if (result != MatchResult.NONE) {
       box.val('');
       let cls = (result == MatchResult.MATCH ? 'correct' : 'wrong');
@@ -327,11 +383,11 @@ function flashBox(cls) {
    }, 100);
 }
 
-function showHint() {
+function showRegionHint() {
    for (let i = 0; i < selectedRegion.nations.length; i++) {
       let n = selectedRegion.nations[i];
       if (!n.found) {
-         showAlert("You're missing one that starts with " + n.feature.properties.name_long[0]);
+         showAlert(n.generateHint());
          $("#nameBox").focus();
          break;
       }
@@ -368,9 +424,9 @@ function updateSize() {
 $(function() {
    selectRegion(regions[0]);
    $("#nameBox").focus();
-   $("#hintlink").on('click', function(e) {
+   $("#hintLink").on('click', function(e) {
       $("#menu").hide();
-      showHint();
+      showRegionHint();
       return false;
    });
    $("#alert").css({
